@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
                         combineResult = state.value.combine,
                         zipResult = state.value.zip,
                         flatMapResult = state.value.flatMap,
-                        merge = state.value.merge,
+                        merge = viewModel.mergeList.joinToString (", "),
                         numbers1 = viewModel.numbers1.joinToString (", "),
                         numbers2 = viewModel.numbers2.joinToString (", "),
                         numbers3 = viewModel.numbers3.joinToString (", ")

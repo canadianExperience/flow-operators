@@ -9,10 +9,6 @@ import kotlinx.coroutines.flow.*
 @ExperimentalCoroutinesApi
 class FlowViewModel: ViewModel() {
 
-    private val _flow1 = (1..10).asFlow().onEach { delay(3000) }
-    private val _flow2 = (1..10).asFlow().onEach { delay(5000) }
-    private val _flow3 = (1..10).asFlow().onEach { delay(7000) }
-
     private val _numbers1 = mutableListOf<String>()
     val numbers1 get() = _numbers1
 
@@ -22,9 +18,23 @@ class FlowViewModel: ViewModel() {
     private val _numbers3 = mutableListOf<String>()
     val numbers3 get() = _numbers3
 
+    private val _mergeList = mutableListOf<String>()
+    val mergeList get() = _mergeList
+
+    private val _flow1 = (1..10).asFlow().onEach { delay(3000) }
+    private val _flow2 = (1..10).asFlow().onEach { delay(5000) }
+    private val _flow3 = (1..10).asFlow().onEach { delay(7000) }
+
+    //Merge
+    private val _mergeResult = merge(
+        _flow1,
+        _flow2,
+        _flow3
+    )
+
     init {
         _flow1.onEach { number1 ->
-           _numbers1.add("$number1")
+            _numbers1.add("$number1")
         }.launchIn(viewModelScope)
 
         _flow2.onEach { number2 ->
@@ -33,6 +43,10 @@ class FlowViewModel: ViewModel() {
 
         _flow3.onEach { number3 ->
             _numbers3.add("$number3")
+        }.launchIn(viewModelScope)
+
+        _mergeResult.onEach { number ->
+            _mergeList.add("$number")
         }.launchIn(viewModelScope)
     }
 
@@ -59,24 +73,15 @@ class FlowViewModel: ViewModel() {
         }
     }
 
-    //Merge
-    private val _mergeResult = merge(
-        _flow1,
-        _flow2,
-        _flow3
-    )
-
     private val _state = combine(
         _zipResultFlow,
         _combineResultFlow,
-        _flatMapResult,
-        _mergeResult
-    ){ zipRes, combineRes, flatMapRes, mergeRes ->
+        _flatMapResult
+    ){ zipRes, combineRes, flatMapRes ->
         LaunchViewModelData(
             combine = combineRes,
             zip = zipRes,
-            flatMap = flatMapRes,
-            merge = "$mergeRes"
+            flatMap = flatMapRes
         )
     }.stateIn(
         scope = viewModelScope,
@@ -89,7 +94,6 @@ class FlowViewModel: ViewModel() {
     data class LaunchViewModelData(
         val combine: String = "(0, 0, 0)",
         val zip: String = "(0, 0, 0)",
-        val flatMap: String = "0",
-        val merge: String = "0"
+        val flatMap: String = "0"
     )
 }
